@@ -49,17 +49,19 @@ def crear_lote(lista: list):
 # ---------------------------------------------------------
 @app.get("/productos", response_model=DTOCatalogo)
 def listar():
-
-    docs = list(COL.find({}, {"_id": 1, "nombre": 1, "precio": 1, "stock": 1}))
-
+    # 1. Obtener todos los productos
+    docs = list(COL.find({}))  # Devolver todos los campos, no limitar por _id
+    
+    # 2. Transformar cada documento y agregar el campo 'id' con el valor de '_id'
     for d in docs:
-        d["id"] = d["_id"]
-        del d["_id"]
+        d["id"] = str(d["_id"])  # Convertir _id a string y asignarlo a 'id'
+        del d["_id"]  # Eliminar el campo _id original
 
-    return DTOCatalogo(
-        producto=docs,
-        operacion="db.productos.find({})"
-    )
+    # 3. Crear una lista con DTOs para cada producto
+    productos_dto = [DTOCatalogo(producto=d, operacion="db.productos.find({})") for d in docs]
+
+    # 4. Envolver la lista en un DTOFinal para devolver todo
+    return {"producto": productos_dto, "operacion": "db.productos.find({})"}
 
 
 # ---------------------------------------------------------
@@ -68,18 +70,20 @@ def listar():
 @app.get("/productos/{id}", response_model=DTOCatalogo)
 def obtener(id: str):
 
-    prod = COL.find_one({"_id": id}, {"_id": 1, "nombre": 1, "precio": 1, "stock": 1})
+    # 1) Buscar el producto en MongoDB, sin limitación de campos
+    prod = COL.find_one({"_id": id})
 
     if not prod:
         raise HTTPException(404, "Producto no encontrado")
 
-    # _id → id
-    prod["id"] = prod["_id"]
-    del prod["_id"]
+    # 2) Transformar _id → id
+    prod["id"] = str(prod["_id"])  # Convertimos _id a string y lo asignamos a 'id'
+    del prod["_id"]  # Eliminar el campo _id original
 
+    # 3) Devolver el DTOCatalogo con el producto completo y la operación MongoDB
     return DTOCatalogo(
-        producto=prod,
-        operacion=f"db.productos.findOne({{'_id': '{id}'}})"
+        producto=prod,  # Producto completo
+        operacion=f"db.productos.findOne({{'_id': '{id}'}})"  # Operación ejecutada en MongoDB
     )
 
 

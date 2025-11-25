@@ -51,6 +51,43 @@ async def get_producto(id: str):
             analytics=dto_analytics
         )
 
+@app.get("/productos", response_model=DTOFinal)
+async def get_todos_productos():
+    async with httpx.AsyncClient() as c:
+
+        # 1) Obtener todos los productos (DTOCatalogo)
+        catalog_res = await c.get(f"{catalog_url}/productos")
+        
+        # Verificar si la respuesta fue exitosa
+        if catalog_res.status_code != 200:
+            raise HTTPException(status_code=catalog_res.status_code, detail="Error al obtener productos de catalog")
+
+        dto_catalog = catalog_res.json()
+
+        # 2) recommendation no interviene aquí (puedes dejar un valor predeterminado)
+        dto_rec = {
+            "resultado": "sin cambios",
+            "operacion": "N/A"
+        }
+
+        # 3) Evento analytics
+        analytics_res = await c.post(
+            f"{analytics_url}/evento",
+            json={"evento": "listado_productos"}
+        )
+
+        if analytics_res.status_code != 200:
+            raise HTTPException(status_code=analytics_res.status_code, detail="Error al registrar evento en analytics")
+
+        dto_analytics = analytics_res.json()
+
+        # 4) Devolver la respuesta unificada en DTOFinal
+        return DTOFinal(
+            producto=dto_catalog["producto"],  # Asegúrate de que 'producto' es la lista de productos
+            catalog=dto_catalog,
+            recommendation=dto_rec,
+            analytics=dto_analytics
+        )
 
 # ============================================================================
 #   DELETE producto → también unifica DTOs
