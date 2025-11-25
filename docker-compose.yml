@@ -16,7 +16,7 @@ services:
   # ANALYTICS SERVICE (FASTAPI)
   ############################
   analytics:
-    build: ./analytics
+    build: ./arquitectura_nosql/analytics
     container_name: analytics_service
     environment:
       - RIAK_HOST=riak
@@ -41,7 +41,7 @@ services:
   # CATALOG SERVICE
   ############################
   catalog:
-    build: ./catalog
+    build: ./arquitectura_nosql/catalog
     container_name: catalog_service
     depends_on:
       - mongo
@@ -63,7 +63,7 @@ services:
   # RECOMMENDATION SERVICE
   ############################
   recommendation:
-    build: ./recommendation
+    build: ./arquitectura_nosql/recommendation
     container_name: recommendation_service
     depends_on:
       - redis
@@ -76,7 +76,7 @@ services:
   # GATEWAY
   ############################
   gateway:
-    build: ./gateway
+    build: ./arquitectura_nosql/gateway
     container_name: gateway_service
     depends_on:
       - catalog
@@ -90,7 +90,7 @@ services:
   # FRONTEND (REACT + VITE)
   ############################
   frontend:
-    build: ./frontend
+    build: ./frontend_nosql/frontend
     container_name: frontend_app
     depends_on:
       - gateway
