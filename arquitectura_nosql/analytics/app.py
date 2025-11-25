@@ -3,6 +3,7 @@ import requests
 import time
 import os
 import json
+from dto.dto_analytics import DTOAnalytics as EventoDTO
 
 app = FastAPI()
 
@@ -20,11 +21,12 @@ def riak_key_url(key: str) -> str:
     return f"{BASE_URL}/keys/{key}"
 
 
-@app.post("/evento")
+@app.post("/evento", response_model=EventoDTO)
 def crear_evento(evento: dict):
     """
-    Crea un evento en Riak con una key generada por timestamp.
+    Crea un evento en Riak y devuelve un DTO consistente.
     """
+
     key = str(int(time.time() * 1000))
     evento["timestamp"] = evento.get("timestamp", int(time.time()))
 
@@ -32,17 +34,25 @@ def crear_evento(evento: dict):
     headers = {"Content-Type": "application/json"}
 
     resp = requests.put(url, headers=headers, data=json.dumps(evento))
+
     if resp.status_code not in (200, 204):
-        raise HTTPException(status_code=500, detail=f"Error al guardar en Riak: {resp.text}")
+        raise HTTPException(
+            status_code=500,
+            detail=f"Error al guardar en Riak: {resp.text}"
+        )
 
-    return {"msg": "ok", "key": key, "evento": evento}
+    return EventoDTO(
+        evento=evento,
+        operacion=f"riak.PUT('{url}')"
+    )
 
 
-@app.get("/evento/{key}")
+@app.get("/evento/{key}", response_model=EventoDTO)
 def obtener_evento(key: str):
     """
-    Recupera un evento por su key desde Riak.
+    Recupera un evento desde Riak y devuelve DTO.
     """
+
     url = riak_key_url(key)
     resp = requests.get(url)
 
@@ -50,22 +60,31 @@ def obtener_evento(key: str):
         raise HTTPException(status_code=404, detail="Evento no encontrado")
 
     if resp.status_code != 200:
-        raise HTTPException(status_code=500, detail=f"Error al leer de Riak: {resp.text}")
+        raise HTTPException(
+            status_code=500,
+            detail=f"Error al leer de Riak: {resp.text}"
+        )
 
     try:
         data = resp.json()
     except ValueError:
-        # Por si no es JSON válido
-        raise HTTPException(status_code=500, detail="Datos corruptos en Riak (no JSON)")
+        raise HTTPException(
+            status_code=500,
+            detail="Datos corruptos en Riak (no JSON)"
+        )
 
-    return {"key": key, "evento": data}
+    return EventoDTO(
+        evento=data,
+        operacion=f"riak.GET('{url}')"
+    )
 
 
-@app.delete("/evento/{key}")
+@app.delete("/evento/{key}", response_model=EventoDTO)
 def borrar_evento(key: str):
     """
-    Borra un evento por key.
+    Borra un evento por key y devuelve DTO.
     """
+
     url = riak_key_url(key)
     resp = requests.delete(url)
 
@@ -73,23 +92,31 @@ def borrar_evento(key: str):
         raise HTTPException(status_code=404, detail="Evento no encontrado")
 
     if resp.status_code not in (200, 204):
-        raise HTTPException(status_code=500, detail=f"Error al borrar en Riak: {resp.text}")
+        raise HTTPException(
+            status_code=500,
+            detail=f"Error al borrar en Riak: {resp.text}"
+        )
 
-    return {"msg": "borrado", "key": key}
+    return EventoDTO(
+        evento={"key": key, "status": "borrado"},
+        operacion=f"riak.DELETE('{url}')"
+    )
 
 
 @app.get("/eventos")
 def listar_eventos():
     """
-    Lista todas las keys del bucket 'eventos' (ojo: en producción puede ser caro).
+    Lista todas las keys del bucket.
     """
-    # Riak HTTP para listar keys:
-    # GET /types/default/buckets/eventos/keys?keys=true
+
     url = f"{BASE_URL}/keys?keys=true"
     resp = requests.get(url)
 
     if resp.status_code != 200:
-        raise HTTPException(status_code=500, detail=f"Error listando keys en Riak: {resp.text}")
+        raise HTTPException(
+            status_code=500,
+            detail=f"Error listando keys en Riak: {resp.text}"
+        )
 
     data = resp.json()
     keys = data.get("keys", [])

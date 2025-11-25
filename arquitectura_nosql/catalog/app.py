@@ -1,35 +1,125 @@
-
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from pymongo import MongoClient
+from dto.dto_catalogo import DTOCatalogo
 
-app=FastAPI()
-db=MongoClient("mongodb://mongo:27017").catalogo
+app = FastAPI()
 
-@app.post("/productos")
-def crear(p:dict):
-    db.productos.insert_one(p)
-    return p
+# Conexión a MongoDB (docker)
+db = MongoClient("mongodb://mongo:27017").catalogo
 
-app.post("/productos/lote")
+COL = db.productos
+
+
+# ---------------------------------------------------------
+# 1) Crear producto
+# ---------------------------------------------------------
+@app.post("/productos", response_model=DTOCatalogo)
+def crear(p: dict):
+    if "_id" not in p:
+        raise HTTPException(400, "Falta _id en el producto")
+
+    COL.insert_one(p)
+
+    return DTOCatalogo(
+        producto=p,
+        operacion=f"db.productos.insertOne({p})"
+    )
+
+
+# ---------------------------------------------------------
+# 2) Crear lote de productos
+# ---------------------------------------------------------
+@app.post("/productos/lote", response_model=DTOCatalogo)
 def crear_lote(lista: list):
-    # Inserta todos los documentos tal cual vienen
-    db.productos.insert_many(lista)
-    return {"insertados": len(lista)}
 
-@app.get("/productos")
+    for prod in lista:
+        if "_id" not in prod:
+            raise HTTPException(400, "Todos los productos necesitan _id")
+
+    COL.insert_many(lista)
+
+    return DTOCatalogo(
+        producto={"insertados": len(lista)},
+        operacion="db.productos.insertMany(<lista>)"
+    )
+
+
+# ---------------------------------------------------------
+# 3) Listar todos
+# ---------------------------------------------------------
+@app.get("/productos", response_model=DTOCatalogo)
 def listar():
-    return list(db.productos.find({},{"_id":0}))
 
-@app.get("/productos/{id}")
-def obtener(id:str):
-    return db.productos.find_one({"_id":id},{"_id":0})
+    docs = list(COL.find({}, {"_id": 1, "nombre": 1, "precio": 1, "stock": 1}))
 
-@app.put("/productos/{id}")
-def actualizar(id:str,p:dict):
-    db.productos.update_one({"_id":id},{"$set":p})
-    return {"msg":"actualizado"}
+    for d in docs:
+        d["id"] = d["_id"]
+        del d["_id"]
 
-@app.delete("/productos/{id}")
-def borrar(id:str):
-    db.productos.delete_one({"_id":id})
-    return {"msg":"borrado"}
+    return DTOCatalogo(
+        producto=docs,
+        operacion="db.productos.find({})"
+    )
+
+
+# ---------------------------------------------------------
+# 4) Obtener uno por ID
+# ---------------------------------------------------------
+@app.get("/productos/{id}", response_model=DTOCatalogo)
+def obtener(id: str):
+
+    prod = COL.find_one({"_id": id}, {"_id": 1, "nombre": 1, "precio": 1, "stock": 1})
+
+    if not prod:
+        raise HTTPException(404, "Producto no encontrado")
+
+    # _id → id
+    prod["id"] = prod["_id"]
+    del prod["_id"]
+
+    return DTOCatalogo(
+        producto=prod,
+        operacion=f"db.productos.findOne({{'_id': '{id}'}})"
+    )
+
+
+# ---------------------------------------------------------
+# 5) Actualizar
+# ---------------------------------------------------------
+@app.put("/productos/{id}", response_model=DTOCatalogo)
+def actualizar(id: str, p: dict):
+
+    COL.update_one({"_id": id}, {"$set": p})
+
+    return DTOCatalogo(
+        producto={"id": id, "actualizado": p},
+        operacion=f"db.productos.updateOne({{'_id': '{id}'}}, {{'$set': {p}}})"
+    )
+
+
+# ---------------------------------------------------------
+# 6) Borrar uno
+# ---------------------------------------------------------
+@app.delete("/productos/{id}", response_model=DTOCatalogo)
+def borrar(id: str):
+
+    COL.delete_one({"_id": id})
+
+    return DTOCatalogo(
+        producto={"id": id},
+        operacion=f"db.productos.deleteOne({{'_id': '{id}'}})"
+    )
+
+
+# ---------------------------------------------------------
+# 7) Borrar todos
+# ---------------------------------------------------------
+@app.delete("/productos", response_model=DTOCatalogo)
+def borrar_todos():
+
+    resultado = COL.delete_many({})
+
+    return DTOCatalogo(
+        producto={"borrados": resultado.deleted_count},
+        operacion="db.productos.deleteMany({})"
+    )
