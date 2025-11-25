@@ -1,38 +1,98 @@
-
 version: '3.9'
+
 services:
-  mongo:
-    image: mongo:6
-    ports: ["27017:27017"]
 
-  redis:
-    image: redis:latest
-    ports: ["6379:6379"]
-
+  ############################
+  # RIAK DATABASE
+  ############################
   riak:
     image: basho/riak-kv
-    ports: ["8087:8087","8098:8098"]
+    container_name: riak_db
+    ports:
+      - "8087:8087"
+      - "8098:8098"
 
-  catalog:
-    build: ./catalog
-    command: uvicorn app:app --host 0.0.0.0 --port 8001
-    ports: ["8001:8001"]
-    depends_on: [mongo]
-
-  recommendation:
-    build: ./recommendation
-    command: uvicorn app:app --host 0.0.0.0 --port 8002
-    ports: ["8002:8002"]
-    depends_on: [redis]
-
+  ############################
+  # ANALYTICS SERVICE (FASTAPI)
+  ############################
   analytics:
     build: ./analytics
+    container_name: analytics_service
+    environment:
+      - RIAK_HOST=riak
+      - RIAK_PORT=8098
+    depends_on:
+      - riak
+    ports:
+      - "8003:8003"
     command: uvicorn app:app --host 0.0.0.0 --port 8003
-    ports: ["8003:8003"]
-    depends_on: [riak]
 
+
+  ############################
+  # MONGODB
+  ############################
+  mongo:
+    image: mongo:6
+    container_name: mongo_db
+    ports:
+      - "27017:27017"
+
+  ############################
+  # CATALOG SERVICE
+  ############################
+  catalog:
+    build: ./catalog
+    container_name: catalog_service
+    depends_on:
+      - mongo
+    ports:
+      - "8001:8001"
+    command: uvicorn app:app --host 0.0.0.0 --port 8001
+
+
+  ############################
+  # REDIS
+  ############################
+  redis:
+    image: redis:latest
+    container_name: redis_db
+    ports:
+      - "6379:6379"
+
+  ############################
+  # RECOMMENDATION SERVICE
+  ############################
+  recommendation:
+    build: ./recommendation
+    container_name: recommendation_service
+    depends_on:
+      - redis
+    ports:
+      - "8002:8002"
+    command: uvicorn app:app --host 0.0.0.0 --port 8002
+
+
+  ############################
+  # GATEWAY
+  ############################
   gateway:
     build: ./gateway
+    container_name: gateway_service
+    depends_on:
+      - catalog
+      - recommendation
+      - analytics
+    ports:
+      - "8000:8000"
     command: uvicorn app:app --host 0.0.0.0 --port 8000
-    ports: ["8000:8000"]
-    depends_on: [catalog,recommendation,analytics]
+
+  ############################
+  # FRONTEND (REACT + VITE)
+  ############################
+  frontend:
+    build: ./frontend
+    container_name: frontend_app
+    depends_on:
+      - gateway
+    ports:
+      - "5173:5173"

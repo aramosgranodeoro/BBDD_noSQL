@@ -34,7 +34,7 @@ La arquitectura está diseñada para ser modular, fácilmente desplegable y exte
 │   ├── Dockerfile
 │   └── .dockerignore
 │
-├── analytics/            # API Gateway
+├── gateway/            # API Gateway
 │   ├── app.py
 │   ├── requirements.txt
 │   ├── Dockerfile
