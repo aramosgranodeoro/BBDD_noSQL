@@ -3,7 +3,7 @@ import requests
 import time
 import os
 import json
-from dto.dto_analytics import EventoDTO
+from dto.dto_analytics import DTOAnalytics as EventoDTO
 
 app = FastAPI()
 
