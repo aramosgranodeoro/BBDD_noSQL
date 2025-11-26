@@ -1,4 +1,6 @@
 import ProductItem from "./ProductItem";
+import JsonBlock from "./JsonBlock";
+import OperationBlock from "./OperationBlock";
 import React from "react";
 import { useState } from "react";
 
@@ -10,7 +12,7 @@ export default function ProductList({ products }) {
         <ul className="lista-secciones">
             {products.recommendation && (
                 <li className="seccion">
-                <JsonBlock title="Recomendacion (Redis)" data={products.recommendation.detalle} />
+                <JsonBlock title="Recomendacion (Redis)" data={products.recommendation.resultado} />
                 <OperationBlock operacion={products.recommendation.operacion} />
                 </li>
             )}
@@ -25,7 +27,7 @@ export default function ProductList({ products }) {
             {products.producto.map((p, index) => (  <ProductItem key={index} p={p} index={index} /> ))}
 
             <li className="seccion">
-                <OperationBlock operacion={products.analytics.operacion} />
+                <OperationBlock operacion={products.catalog.operacion} />
             </li>
         </ul>
     </div>

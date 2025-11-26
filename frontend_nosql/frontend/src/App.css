@@ -137,7 +137,7 @@ textarea.input {
 
 .seccion h3 {
     margin: 0 0 10px;
-    color: #00c8ff;
+    color: #ff8200;
 }
 
 .operacion {
@@ -170,7 +170,21 @@ textarea.input {
     color: white;
 }
 
+.menu {
+    background-color: #414040;
+    display: flex;
+    color:white;
+}
 
+.menu .activo{
+    background-color: #1e1e1e;
+    font-weight: bold;
+}
+
+.menu button{
+    width: 100%;
+    background-color: #414040;
+}
 
 /* Móvil */
 @media (max-width: 600px) {

@@ -47,28 +47,17 @@ def crear_lote(lista: list):
 # ---------------------------------------------------------
 # 3) Listar todos
 # ---------------------------------------------------------
-@app.get("/productos", response_model=DTOCatalogo)
+@app.get("/productos", response_model=DTOCatalogos)
 def listar():
 
     docs = list(COL.find({}))
 
-    # Transformación _id → id
     for d in docs:
         d["id"] = str(d["_id"])
         del d["_id"]
 
-    # Creamos una lista de DTOCatalogo individuales
-    productos_dto = [
-        DTOCatalogo(
-            producto=d,
-            operacion="db.productos.find({})"
-        )
-        for d in docs
-    ]
-
-    # Devolvemos UN DTOCatalogo que contiene dentro la lista de DTOCatalogo
-    return DTOCatalogo(
-        producto=productos_dto,
+    return DTOCatalogos(
+        producto=docs,                    
         operacion="db.productos.find({})"
     )
 

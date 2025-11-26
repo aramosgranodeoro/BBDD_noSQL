@@ -11,7 +11,7 @@ export default function ProductDetail({ product, deleteProduct }) {
 
         {product.catalog && (
           <li className="seccion">
-            <JsonBlock title="Catalogo (MondoDB)" data={product.catalog.resultado} />
+            <JsonBlock title="Catalogo (MondoDB)" data={product.catalog.producto} />
             <OperationBlock operacion={product.catalog.operacion} />
           </li>
         )}

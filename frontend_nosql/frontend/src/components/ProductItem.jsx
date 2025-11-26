@@ -7,7 +7,7 @@ export default function ProductItem({ p, index }) {
   return (
     <li className="seccion">
         <h3> Producto {index + 1}</h3>
-        <JsonBlock title=" Producto" data={p} />
+        <JsonBlock data={p} />
     </li>
   );
 }

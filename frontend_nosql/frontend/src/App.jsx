@@ -9,8 +9,9 @@ import UpdateProduct from "./components/UpdateProduct";
 export default function App() {
   const [id, setId] = useState("");
   const [product, setProduct] = useState(null);
-  const [products, setProducts] = useState([]);
+  const [products, setProducts] = useState({});
   const [estado, setEstado] = useState(null);
+  const [menu, setMenu] = useState(1);
 
   const [nuevo, setNuevo] = useState({});
   const [editar, setEditar] = useState({});
@@ -107,7 +108,7 @@ export default function App() {
 
       const data = await res.json();
       setEstado(data.msg);
-      setProducts([]);
+      setProducts({});
       setProduct(null);
     } catch (error) {
       console.error(error);
@@ -118,37 +119,64 @@ export default function App() {
     <div id="containerPrincipal">
       <h1>NoSQL Microservices Frontend</h1>
 
-      {/* LISTAR Y BORRAR TODO */}
-      <div className="row">
-        <button className="btn" onClick={fetchProducts}>LISTA DE PRODUCTOS</button>
-        <button className="btn delete" onClick={deleteProducts}>ELIMINAR TODO</button>
+      {/* ---- MENÚ PRINCIPAL ---- */}
+      <div className="menu">
+        <button className={`btn ${menu === 1 ? "activo" : ""}`} onClick={() => setMenu(1)}>Lista de Productos</button>
+        <button className={`btn ${menu === 2 ? "activo" : ""}`} onClick={() => setMenu(2)}>Buscar por ID</button>
+        <button className={`btn ${menu === 3 ? "activo" : ""}`} onClick={() => setMenu(3)}>Crear Producto</button>
+        <button className={`btn ${menu === 4 ? "activo" : ""}`} onClick={() => setMenu(4)}>Actualizar Producto</button>
       </div>
 
-      {/* LISTA DE PRODUCTOS */}
-      {products.length > 0 && <ProductList products={products} />}
-
       <div className="divider"></div>
 
-      {/* BUSCAR POR ID */}
-      <div className="row">
-        <input className="input" placeholder="ID producto" value={id} onChange={(e) => setId(e.target.value)} />
-        <button className="btn" onClick={fetchProduct}>Buscar</button>
-      </div>
+      {/* ---- OPCIÓN 1: LISTA ---- */}
+      {menu == 1 && (
+        <>
+          <h2>Lista completa</h2>
+          <div className="row">
+            <button className="btn" onClick={fetchProducts}>Cargar lista</button>
+            <button className="btn delete" onClick={deleteProducts}>Eliminar Todo</button>
+          </div>
 
-      {/* RESULTADO INDIVIDUAL */}
-      {product && ( <ProductDetail product={product} deleteProduct={deleteProduct} /> )}
+          {Object.keys(products).length > 0 && (
+            <ProductList products={products} />
+          )}
+        </>
+      )}
 
-      <div className="divider"></div>
+      {/* ---- OPCIÓN 2: BUSCAR POR ID ---- */}
+      {menu == 2 && (
+        <>
+          <h2>Buscar producto por ID</h2>
 
-      {/* CREAR */}
-      <CreateProduct nuevo={nuevo} setNuevo={setNuevo} crearProducto={crearProducto} />
+          <div className="row">
+            <input className="input" placeholder="ID producto" value={id} onChange={(e) => setId(e.target.value)} />
+            <button className="btn" onClick={fetchProduct}>Buscar</button>
+          </div>
 
-      <div className="divider"></div>
+          {product && (
+            <ProductDetail product={product} deleteProduct={deleteProduct} />
+          )}
+        </>
+      )}
 
-      {/* EDITAR */}
-      <UpdateProduct id={id} setId={setId} editar={editar} setEditar={setEditar} actualizarProducto={actualizarProducto}/>
+      {/* ---- OPCIÓN 3: CREAR PRODUCTO ---- */}
+      {menu == 3 && (
+        <>
+          <h2>Crear nuevo producto</h2>
+          <CreateProduct nuevo={nuevo} setNuevo={setNuevo} crearProducto={crearProducto} />
+        </>
+      )}
 
-      {estado && <p className="estado">{estado}</p>}
+      {/* ---- OPCIÓN 4: ACTUALIZAR PRODUCTO ---- */}
+      {menu == 4 && (
+        <>
+          <h2>Actualizar producto</h2>
+          <UpdateProduct id={id} setId={setId} editar={editar} setEditar={setEditar} actualizarProducto={actualizarProducto} />
+        </>
+      )}
+
     </div>
   );
+
 }
