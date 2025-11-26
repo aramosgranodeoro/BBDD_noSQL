@@ -6,12 +6,7 @@ export default function OperationBlock({ operacion }) {
     <div className="operacion">
       <span>{operacion}</span>
 
-      <button
-        className="copiar"
-        onClick={() => navigator.clipboard.writeText(operacion)}
-      >
-        📄
-      </button>
+      <button className="copiar" onClick={() => navigator.clipboard.writeText(operacion)} > 🗐 </button>
     </div>
   );
 }

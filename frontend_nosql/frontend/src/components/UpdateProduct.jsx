@@ -16,26 +16,28 @@ export default function UpdateProduct({ id, setId, editar, setEditar, actualizar
 
   return (
     <div className="card">
-      <h3>Actualizar producto</h3>
+        <h3>Actualizar producto</h3>
 
-      <input
+        <input
         className="input"
         placeholder="ID a actualizar"
         value={id}
         onChange={(e) => setId(e.target.value)}
-      />
+        />
 
-      <textarea
+        <textarea
         className="input"
         value={rawJson}
         onChange={(e) => setRawJson(e.target.value)}
-      />
+        />
 
-      <OperationBlock operacion={"operacion de update"} />
+        <div class="row">
+            <OperationBlock operacion={"operacion de update"} />
 
-      <button className="btn" onClick={handleUpdate}>
-        ACTUALIZAR
-      </button>
+            <button className="btn" onClick={handleUpdate}>
+            ACTUALIZAR
+            </button>
+        </div>
     </div>
   );
 }

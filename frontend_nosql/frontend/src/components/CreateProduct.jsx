@@ -17,19 +17,21 @@ export default function CreateProduct({ nuevo, setNuevo, crearProducto }) {
 
   return (
     <div className="card">
-      <h3>Crear producto</h3>
+        <h3>Crear producto</h3>
 
-      <textarea
+        <textarea
         className="input"
         value={rawJson}
         onChange={(e) => setRawJson(e.target.value)}
-      />
+        />
 
-      <OperationBlock operacion={"operacion de create"} />
+        <div class="row">
+            <OperationBlock operacion={"operacion de create"} />
 
-      <button className="btn" onClick={handleCreate}>
-        CREAR
-      </button>
+            <button className="btn" onClick={handleCreate}>
+                CREAR
+            </button>
+        </div>
     </div>
   );
 }

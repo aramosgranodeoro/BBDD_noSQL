@@ -22,6 +22,7 @@ export default function App() {
       const data = await res.json();
       setProducts(data);
       setEstado(null);
+      
     } catch (error) {
       console.error(error);
     }

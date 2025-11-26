@@ -11,29 +11,28 @@ export default function ProductDetail({ product, deleteProduct }) {
 
         {product.catalog && (
           <li className="seccion">
-            <JsonBlock title="📦 Catalog" data={product.catalog.producto} />
+            <JsonBlock title="Catalogo (MondoDB)" data={product.catalog.producto} />
             <OperationBlock operacion={product.catalog.operacion} />
           </li>
         )}
 
         {product.recommendation && (
           <li className="seccion">
-            <JsonBlock title="⭐ Recommendation" data={product.recommendation} />
+            <JsonBlock title="Recomendacion (Redis)" data={product.recommendation} />
             <OperationBlock operacion={product.recommendation.operacion} />
           </li>
         )}
 
         {product.analytics && (
           <li className="seccion">
-            <JsonBlock title="📊 Analytics" data={product.analytics.evento} />
+            <JsonBlock title="Analiticas (Riak KV)" data={product.analytics.evento} />
             <OperationBlock operacion={product.analytics.operacion} />
           </li>
         )}
 
         {product.producto && (
           <li className="seccion">
-            <JsonBlock title="🛒 Producto Final" data={product.producto} />
-            <div className="operacion">(No hay operación aquí)</div>
+            <JsonBlock title="Producto" data={product.producto} />
           </li>
         )}
       </ul>
