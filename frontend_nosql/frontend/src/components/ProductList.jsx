@@ -17,8 +17,8 @@ export default function ProductList({ products }) {
 
             {products.analytics && (
                 <li className="seccion">
-                <JsonBlock title="Analiticas (Riak KV)" data={products.analytics.evento} />
-                <OperationBlock operacion={products.analytics.operacion} />
+                    <JsonBlock title="Analiticas (Riak KV)" data={products.analytics.evento} />
+                    <OperationBlock operacion={products.analytics.operacion} />
                 </li>
             )}
 

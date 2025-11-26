@@ -131,19 +131,12 @@ export default function App() {
 
       {/* BUSCAR POR ID */}
       <div className="row">
-        <input
-          className="input"
-          placeholder="ID producto"
-          value={id}
-          onChange={(e) => setId(e.target.value)}
-        />
+        <input className="input" placeholder="ID producto" value={id} onChange={(e) => setId(e.target.value)} />
         <button className="btn" onClick={fetchProduct}>Buscar</button>
       </div>
 
       {/* RESULTADO INDIVIDUAL */}
-      {product && (
-        <ProductDetail product={product} deleteProduct={deleteProduct} />
-      )}
+      {product && ( <ProductDetail product={product} deleteProduct={deleteProduct} /> )}
 
       <div className="divider"></div>
 
@@ -153,13 +146,7 @@ export default function App() {
       <div className="divider"></div>
 
       {/* EDITAR */}
-      <UpdateProduct
-        id={id}
-        setId={setId}
-        editar={editar}
-        setEditar={setEditar}
-        actualizarProducto={actualizarProducto}
-      />
+      <UpdateProduct id={id} setId={setId} editar={editar} setEditar={setEditar} actualizarProducto={actualizarProducto}/>
 
       {estado && <p className="estado">{estado}</p>}
     </div>
