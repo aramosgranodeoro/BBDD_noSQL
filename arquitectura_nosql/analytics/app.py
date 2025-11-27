@@ -12,16 +12,19 @@ app = FastAPI()
 # Host y puerto de Riak (HTTP)
 RIAK_HOST = os.getenv("RIAK_HOST", "riak")
 RIAK_PORT = os.getenv("RIAK_PORT", "8098")
+RIAK_HOST_LOCAL = "localhost"
 
 BUCKET_TYPE = "default"
 BUCKET_NAME = "eventos"
 
 BASE_URL = f"http://{RIAK_HOST}:{RIAK_PORT}/types/{BUCKET_TYPE}/buckets/{BUCKET_NAME}"
-
+BASE_URL_LOCAL = f"http://{RIAK_HOST_LOCAL}:{RIAK_PORT}/types/{BUCKET_TYPE}/buckets/{BUCKET_NAME}"
 
 def riak_key_url(key: str) -> str:
     return f"{BASE_URL}/keys/{key}"
 
+def riak_key_url_local(key: str) -> str:
+    return f"{BASE_URL_LOCAL}/keys/{key}"
 
 # =====================================================================
 # CREAR EVENTO
@@ -35,6 +38,8 @@ def crear_evento(evento: dict):
     url = riak_key_url(key)
     headers = {"Content-Type": "application/json"}
 
+    url_local = riak_key_url_local(key)
+
     resp = requests.put(url, headers=headers, data=json.dumps(evento))
 
     if resp.status_code not in (200, 204):
@@ -42,10 +47,13 @@ def crear_evento(evento: dict):
             status_code=500,
             detail=f"Error al guardar en Riak: {resp.text}"
         )
+    
+    evento_json = json.dumps(evento)
+    evento_json_escaped = evento_json.replace('"', '\\"')
 
     return DTOAnalytics(
         evento=evento,
-        operacion=f"riak.PUT('{url}')"
+        operacion=f"curl -X PUT \"{url_local}\" -H \"Content-Type: application/json\" -d \"{evento_json_escaped}\""
     )
 
 
@@ -57,6 +65,8 @@ def obtener_evento(key: str):
 
     url = riak_key_url(key)
     resp = requests.get(url)
+
+    url_local = riak_key_url_local(key)
 
     if resp.status_code == 404:
         raise HTTPException(status_code=404, detail="Evento no encontrado")
@@ -77,7 +87,7 @@ def obtener_evento(key: str):
 
     return DTOAnalytics(
         evento=data,
-        operacion=f"riak.GET('{url}')"
+        operacion=f"curl -X GET \"{url_local}\""
     )
 
 
@@ -101,7 +111,7 @@ def borrar_evento(key: str):
 
     return DTOAnalytics(
         evento={"key": key, "status": "borrado"},
-        operacion=f"riak.DELETE('{url}')"
+        operacion=f"curl -X DELETE \"{url}\""
     )
 
 
@@ -125,5 +135,5 @@ def listar_eventos():
 
     return DTOListAnalytics(
         evento=keys,
-        operacion=f"riak.GET('{url}')"
+        operacion=f"curl -X GET \"{url}\""
     )

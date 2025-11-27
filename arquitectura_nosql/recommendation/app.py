@@ -18,7 +18,7 @@ def incr(id: str):
             "producto": id,
             "vistas": score
         },
-        operacion=f"redis.ZINCRBY('{ZSET}', 1, '{id}')"
+        operacion=f"ZINCRBY {ZSET} 1 {id}"
     )
 
 
@@ -33,7 +33,7 @@ def decr(id: str):
             "producto": id,
             "vistas": score
         },
-        operacion=f"redis.ZINCRBY('{ZSET}', -1, '{id}')"
+        operacion=f"ZINCRBY {ZSET} -1 {id}"
     )
 
 
@@ -48,7 +48,7 @@ def init_score(id: str):
             "producto": id,
             "vistas": 0
         },
-        operacion=f"redis.zadd('{ZSET}', {{'{id}': {0}}}, nx=True)"
+        operacion=f"ZADD {ZSET} {{ {id}: 0 }} NX"
     )
 
 # ---------------------------------------------------------
@@ -62,7 +62,7 @@ def get_score(id: str):
             "producto": id,
             "vistas": score
         },
-        operacion=f"redis.ZSCORE('{ZSET}', '{id}')"
+        operacion=f"ZSCORE {ZSET} {id}"
     )
 
 
@@ -77,7 +77,7 @@ def delete(id: str):
             "producto": id,
             "vistas": None
         },
-        operacion=f"redis.ZREM('{ZSET}', '{id}')"
+        operacion=f"ZREM {ZSET} {id}"
     )
 
 
@@ -91,7 +91,7 @@ def reset():
         detalle={
             "resultado": "ranking reseteado",
         },
-        operacion=f"redis.DEL('{ZSET}')"
+        operacion=f"DEL {ZSET}"
     )
 
 
@@ -105,7 +105,7 @@ def bulk_insert(productos: dict):
     with r.pipeline() as pipe:
         for p, score in productos.items():
             pipe.zadd(ZSET, {p: score})
-            operaciones.append(f"pipe.zadd('{ZSET}', {{'{p}': {score}}})")
+            operaciones.append(f"ZADD {ZSET} {{ {p}: {score} }}")
         pipe.execute()
 
     return ProductosScore(
@@ -130,7 +130,7 @@ def top(n: int):
         detalle={
             "resultado": resultado,
         },
-        operacion=f"redis.ZREVRANGE('{ZSET}', 0, {n - 1}, WITHSCORES)"
+        operacion=f"ZREVRANGE {ZSET} 0 {n - 1} WITHSCORES"
     )
     
 # ---------------------------------------------------------
@@ -143,7 +143,7 @@ def rango(start: int = 0, stop: int = 9):
         detalle={
             "resultado": resultado
         },
-        operacion=f"redis.ZREVRANGE('{ZSET}', {start}, {stop}, WITHSCORES)"
+        operacion=f"ZREVRANGE {ZSET} {start} {stop} WITHSCORES"
     )
 
 
@@ -157,7 +157,7 @@ def get_all():
         detalle={
             "resultado": resultado
         },
-        operacion=f"redis.ZREVRANGE('{ZSET}', 0, -1, WITHSCORES)"
+        operacion=f"ZREVRANGE {ZSET} 0 -1 WITHSCORES"
     )
 
 
@@ -171,5 +171,5 @@ def filtrar(min: float = float("-inf"), max: float = float("inf")):
         detalle={
             "resultado": resultado
         },
-        operacion=f"redis.ZRANGEBYSCORE('{ZSET}', {min}, {max}, WITHSCORES)"
+        operacion=f"ZRANGEBYSCORE {ZSET} {min} {max} WITHSCORES"
     )
