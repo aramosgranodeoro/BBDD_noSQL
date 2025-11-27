@@ -14,13 +14,13 @@ export default function UpdateProduct({ id, setId, editar, setEditar, actualizar
       );
       
       const key = Date.now().toString();
-      const riakUrl = `http://riak:8098/types/default/buckets/eventos/keys/${key}`;
+      const riakUrl = `http://localhost:8098/types/default/buckets/eventos/keys/${key}`;
       const evento = {
         evento: "producto_actualizado",
         producto: id
       };
       const eventoString = JSON.stringify(evento).replace(/'/g, "\\'");
-      setRiakOp(  `curl -X PUT '${riakUrl}' -H 'Content-Type: application/json' -d '${eventoString}'` );
+      setRiakOp(  `curl -X PUT "${riakUrl}" -H "Content-Type: application/json" -d "${eventoString}"` );
     } catch {
       setMongoOp("JSON inválido");
       setRiakOp("");

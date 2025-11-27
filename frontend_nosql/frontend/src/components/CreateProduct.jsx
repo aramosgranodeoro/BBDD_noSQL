@@ -13,16 +13,16 @@ export default function CreateProduct({ nuevo, setNuevo, crearProducto }) {
       setMongoOp(`db.productos.insertOne(${JSON.stringify(obj)})`);
 
       const id = obj.id ?? obj._id ?? "ID_NO_ENCONTRADO";
-      setRedisOp(`redis.ZADD("productos:vistas", 0, "${id}")`);
+      setRedisOp(`ZADD productos:vistas 0 ${id}`);
 
       const key = Date.now().toString();
-      const riakUrl = `http://riak:8098/types/default/buckets/eventos/keys/${key}`;
+      const riakUrl = `http://localhost:8098/types/default/buckets/eventos/keys/${key}`;
       const evento = {
         evento: "producto_creado",
         producto: id
       };
       const eventoString = JSON.stringify(evento).replace(/'/g, "\\'");
-      setRiakOp(  `curl -X PUT '${riakUrl}' -H 'Content-Type: application/json' -d '${eventoString}'` );
+      setRiakOp(  `curl -X PUT "${riakUrl}" -H "Content-Type: application/json" -d "{\"evento\":\"producto_creado\",\"producto\":\"${id}\"}"` );
 
     } catch {
       setMongoOp("JSON inválido");

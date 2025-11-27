@@ -5,15 +5,13 @@ import { useState } from "react";
 
 export default function ProductDetail({ product, deleteProduct }) {
 const key = Date.now().toString(); 
-  const riakUrl = `http://riak:8098/types/default/buckets/eventos/keys/${key}`;
+  const riakUrl = `http://localhost:8098/types/default/buckets/eventos/keys/${key}`;
   const evento = {
     evento: "producto_visto",
     producto: product.producto.id
   };
   const eventoString = JSON.stringify(evento).replace(/'/g, "\\'");
-  const riakOperacion = `curl -X PUT '${riakUrl}' -H 'Content-Type: application/json' -d '${eventoString}'`;
-
-
+  const riakOperacion = `curl -X PUT "${riakUrl}" -H "Content-Type: application/json" -d "{\"evento\":\"producto_visto\",\"producto\":\"${product.producto.id}\"}"`;
 
   return (
     <div className="resultado">
@@ -56,7 +54,7 @@ const key = Date.now().toString();
             </div>
 
             <div className="row">
-              <OperationBlock operacion={`r.ZINCRBY("productos:vistas", 1, '${product.producto.id}')`}  />
+              <OperationBlock operacion={`ZINCRBY productos:vistas 1 '${product.producto.id}'`}  />
             </div>
 
             <div className="row">
