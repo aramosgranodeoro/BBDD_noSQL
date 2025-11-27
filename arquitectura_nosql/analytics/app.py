@@ -133,7 +133,24 @@ def listar_eventos():
     data = resp.json()
     keys = data.get("keys", [])
 
+    eventos = []
+
+    # Obtener detalles de cada evento
+    for key in keys:
+        evento_url = riak_key_url(key)
+        evento_resp = requests.get(evento_url)
+
+        if evento_resp.status_code == 200:
+            evento_data = evento_resp.json()
+            evento = {
+                "key": key,
+                "evento": evento_data.get("evento", "Desconocido")  # Asumimos que "evento" es un campo dentro de cada evento
+            }
+            eventos.append(evento)
+        else:
+            eventos.append({"key": key, "evento": "No se pudo obtener el evento"})
+
     return DTOListAnalytics(
-        evento=keys,
+        evento=eventos,
         operacion=f"curl -X GET \"{url}\""
     )
