@@ -16,15 +16,15 @@ export default function UpdateProduct({ id, setId, editar, setEditar, actualizar
     }
   }, [rawJson, id]);
 
-  function handleUpdate() {
-    try {
-      const parsed = JSON.parse(rawJson);
-      setEditar(parsed);
-      actualizarProducto();
-    } catch {
-      alert("El contenido no es JSON válido.");
-    }
+function handleUpdate() {
+  try {
+    const parsed = JSON.parse(rawJson);
+    setEditar(parsed); 
+    actualizarProducto(parsed); 
+  } catch {
+    alert("El contenido no es JSON válido.");
   }
+}
 
   return (
     <div className="card">

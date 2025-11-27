@@ -34,7 +34,8 @@ export default function App() {
     try {
       const res = await fetch(`http://localhost:8000/productos/${id}`);
       const data = await res.json();
-
+      console.log(data);
+      
       if (!data) {
         setEstado("Producto no encontrado");
         setProduct(null);
@@ -44,40 +45,43 @@ export default function App() {
       }
     } catch (error) {
       console.error(error);
+      setProduct(null);
     }
   };
 
   // Crear producto
-  const crearProducto = async () => {
+  const crearProducto = async (obj) => {
     try {
       const res = await fetch(`http://localhost:8000/productos`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(nuevo),
+        body: JSON.stringify(obj),
       });
 
       await res.json();
       setEstado("Producto creado");
-      setNuevo({});
       fetchProducts();
+
     } catch (error) {
       console.error(error);
     }
   };
 
   // Actualizar producto
-  const actualizarProducto = async () => {
+  const actualizarProducto = async (obj) => {
+    console.log("🚀 ENVIANDO A /productos/" + id + " (PUT):", obj);
+
     try {
       const res = await fetch(`http://localhost:8000/productos/${id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(editar),
+        body: JSON.stringify(obj),
       });
 
       await res.json();
       setEstado("Producto actualizado");
-      setEditar({});
       fetchProduct();
+
     } catch (error) {
       console.error(error);
     }
@@ -117,9 +121,8 @@ export default function App() {
 
   return (
     <div id="containerPrincipal">
-      <h1>NoSQL Microservices Frontend</h1>
+      <h1>NoSQL (MongoDB/Redis/Riak)</h1>
 
-      {/* ---- MENÚ PRINCIPAL ---- */}
       <div className="menu">
         <button className={`btn ${menu === 1 ? "activo" : ""}`} onClick={() => setMenu(1)}>Lista de Productos</button>
         <button className={`btn ${menu === 2 ? "activo" : ""}`} onClick={() => setMenu(2)}>Buscar por ID</button>
@@ -129,7 +132,6 @@ export default function App() {
 
       <div className="divider"></div>
 
-      {/* ---- OPCIÓN 1: LISTA ---- */}
       {menu == 1 && (
         <>
           <h2>Lista completa</h2>
@@ -144,13 +146,12 @@ export default function App() {
         </>
       )}
 
-      {/* ---- OPCIÓN 2: BUSCAR POR ID ---- */}
       {menu == 2 && (
         <>
           <h2>Buscar producto por ID</h2>
 
           <div className="row">
-            <input className="input" placeholder="ID producto" value={id} onChange={(e) => setId(e.target.value)} />
+            <input className="input" placeholder="ID producto" value={id} onChange={(e) => setId(e.target.value)} minLength="1" required/>
             <button className="btn" onClick={fetchProduct}>Buscar</button>
           </div>
 
@@ -160,7 +161,6 @@ export default function App() {
         </>
       )}
 
-      {/* ---- OPCIÓN 3: CREAR PRODUCTO ---- */}
       {menu == 3 && (
         <>
           <h2>Crear nuevo producto</h2>
@@ -168,7 +168,6 @@ export default function App() {
         </>
       )}
 
-      {/* ---- OPCIÓN 4: ACTUALIZAR PRODUCTO ---- */}
       {menu == 4 && (
         <>
           <h2>Actualizar producto</h2>

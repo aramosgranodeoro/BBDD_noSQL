@@ -24,7 +24,7 @@ def riak_key_url(key: str) -> str:
 
 
 # =====================================================================
-# 1) CREAR EVENTO
+# CREAR EVENTO
 # =====================================================================
 @app.post("/evento", response_model=DTOAnalytics)
 def crear_evento(evento: dict):
@@ -50,7 +50,7 @@ def crear_evento(evento: dict):
 
 
 # =====================================================================
-# 2) OBTENER EVENTO POR ID
+# OBTENER EVENTO POR ID
 # =====================================================================
 @app.get("/evento/{key}", response_model=DTOAnalytics)
 def obtener_evento(key: str):
@@ -82,7 +82,7 @@ def obtener_evento(key: str):
 
 
 # =====================================================================
-# 3) BORRAR EVENTO
+# BORRAR EVENTO
 # =====================================================================
 @app.delete("/evento/{key}", response_model=DTOAnalytics)
 def borrar_evento(key: str):
@@ -106,7 +106,7 @@ def borrar_evento(key: str):
 
 
 # =====================================================================
-# 4) LISTAR TODAS LAS KEYS
+# LISTAR TODAS LAS KEYS
 # =====================================================================
 @app.get("/eventos", response_model=DTOListAnalytics)
 def listar_eventos():

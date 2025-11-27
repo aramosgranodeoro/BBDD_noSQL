@@ -4,14 +4,11 @@ from dto.dto_recommendation import ProductoScore
 from dto.dto_recommedation_list import ProductosScore
 
 app = FastAPI()
-
 r = redis.Redis(host="redis", port=6379, db=0, decode_responses=True)
-
 ZSET = "productos:vistas"
 
-
 # ---------------------------------------------------------
-# 1) Incrementar vistas de un producto
+# Incrementar vistas de un producto
 # ---------------------------------------------------------
 @app.post("/visita/{id}", response_model=ProductoScore)
 def incr(id: str):
@@ -26,7 +23,7 @@ def incr(id: str):
 
 
 # ---------------------------------------------------------
-# 2) Disminuir vistas
+# Disminuir vistas
 # ---------------------------------------------------------
 @app.post("/visita/{id}/decr", response_model=ProductoScore)
 def decr(id: str):
@@ -41,21 +38,21 @@ def decr(id: str):
 
 
 # ---------------------------------------------------------
-# 3) Obtener el TOP N de productos
+# Añadir recomedacion 0 inicial
 # ---------------------------------------------------------
-@app.get("/top/{n}", response_model=ProductoScore)
-def top(n: int):
-    resultado = r.zrevrange(ZSET, 0, n - 1, withscores=True)
+@app.post("/producto/{id}", response_model=ProductoScore)
+def init_score(id: str):
+    r.zadd(ZSET, {id: 0}, nx=True)
     return ProductoScore(
         detalle={
-            "resultado": resultado,
+            "producto": id,
+            "vistas": 0
         },
-        operacion=f"redis.ZREVRANGE('{ZSET}', 0, {n - 1}, WITHSCORES)"
+        operacion=f"redis.zadd('{ZSET}', {{'{id}': {0}}}, nx=True)"
     )
 
-
 # ---------------------------------------------------------
-# 4) Obtener score de un producto
+# Obtener score de un producto
 # ---------------------------------------------------------
 @app.get("/producto/{id}", response_model=ProductoScore)
 def get_score(id: str):
@@ -70,7 +67,7 @@ def get_score(id: str):
 
 
 # ---------------------------------------------------------
-# 5) Eliminar un producto del ranking
+# Eliminar un producto del ranking
 # ---------------------------------------------------------
 @app.delete("/producto/{id}", response_model=ProductoScore)
 def delete(id: str):
@@ -85,7 +82,7 @@ def delete(id: str):
 
 
 # ---------------------------------------------------------
-# 6) Resetear todo el ZSET
+# Resetear todo el ZSET
 # ---------------------------------------------------------
 @app.delete("/reset", response_model=ProductoScore)
 def reset():
@@ -99,7 +96,7 @@ def reset():
 
 
 # ---------------------------------------------------------
-# 7) Insertar múltiples productos de golpe
+# Insertar múltiples productos de golpe
 # ---------------------------------------------------------
 @app.post("/bulk", response_model=ProductosScore)
 def bulk_insert(productos: dict):
@@ -119,9 +116,25 @@ def bulk_insert(productos: dict):
         operacion=operaciones
     )
 
+#=====================================================
+# CONSULTAS AGREGADAS
+#=====================================================
 
 # ---------------------------------------------------------
-# 8) Obtener un rango (paginación)
+# Obtener el TOP N de productos
+# ---------------------------------------------------------
+@app.get("/top/{n}", response_model=ProductoScore)
+def top(n: int):
+    resultado = r.zrevrange(ZSET, 0, n - 1, withscores=True)
+    return ProductoScore(
+        detalle={
+            "resultado": resultado,
+        },
+        operacion=f"redis.ZREVRANGE('{ZSET}', 0, {n - 1}, WITHSCORES)"
+    )
+    
+# ---------------------------------------------------------
+# Obtener un rango (paginación)
 # ---------------------------------------------------------
 @app.get("/rango", response_model=ProductoScore)
 def rango(start: int = 0, stop: int = 9):
@@ -135,7 +148,7 @@ def rango(start: int = 0, stop: int = 9):
 
 
 # ---------------------------------------------------------
-# 9) Obtener todos los productos
+# Obtener todos los productos
 # ---------------------------------------------------------
 @app.get("/all", response_model=ProductoScore)
 def get_all():
@@ -149,7 +162,7 @@ def get_all():
 
 
 # ---------------------------------------------------------
-# 10) Filtrar por score mínimo y máximo
+# Filtrar por score mínimo y máximo
 # ---------------------------------------------------------
 @app.get("/filtrar", response_model=ProductoScore)
 def filtrar(min: float = float("-inf"), max: float = float("inf")):

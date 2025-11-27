@@ -101,11 +101,9 @@ async def delete_producto(id: str):
         catalog_res = await c.delete(f"{catalog_url}/productos/{id}")
         dto_catalog = catalog_res.json()
 
-        # 2) recommendation ignorado
-        dto_rec = {
-            "resultado": "sin cambios",
-            "operacion": "N/A"
-        }
+        # 2) Eliminar recomensacion de un producto
+        rec_res = await c.delete(f"{rec_url}/producto/{id}")
+        dto_rec = rec_res.json()
 
         # 3) Analytics
         analytics_res = await c.post(
@@ -134,11 +132,9 @@ async def delete_todos_productos():
         catalog_res = await c.delete(f"{catalog_url}/productos")
         dto_catalog = catalog_res.json()
 
-        # 2) recommendation no aplica
-        dto_rec = {
-            "resultado": "sin cambios",
-            "operacion": "N/A"
-        }
+        # 2) Limpiar recomendacioens
+        rec_res = await c.delete(f"{rec_url}/reset")
+        dto_rec = rec_res.json()
 
         # 3) Analytics
         analytics_res = await c.post(
@@ -159,7 +155,6 @@ async def delete_todos_productos():
 # ====================================================================
 @app.post("/productos", response_model=DTOFinal)
 async def crear_producto(producto: dict):
-
     async with httpx.AsyncClient() as c:
 
         # 1) Crear en catalog
@@ -169,11 +164,9 @@ async def crear_producto(producto: dict):
 
         dto_catalog = catalog_res.json()
 
-        # 2) recommendation no aplica
-        dto_rec = {
-            "resultado": "sin cambios",
-            "operacion": "N/A"
-        }
+        # 2) Agregar recomendaciones del producto
+        rec_res = await c.post(f"{rec_url}/producto/{dto_catalog['producto']['id']}")
+        dto_rec = rec_res.json()
 
         # 3) Registrar evento analytics
         analytics_res = await c.post(
@@ -195,7 +188,6 @@ async def crear_producto(producto: dict):
 # ====================================================================
 @app.put("/productos/{id}", response_model=DTOFinal)
 async def actualizar_producto(id: str, datos: dict):
-
     async with httpx.AsyncClient() as c:
 
         # 1) Actualizar en catalog

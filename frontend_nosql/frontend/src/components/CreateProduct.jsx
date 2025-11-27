@@ -17,8 +17,8 @@ export default function CreateProduct({ nuevo, setNuevo, crearProducto }) {
   function handleCreate() {
     try {
       const parsed = JSON.parse(rawJson);
-      setNuevo(parsed);
-      crearProducto();
+      setNuevo(parsed); 
+      crearProducto(parsed); 
     } catch {
       alert("El contenido no es JSON válido.");
     }

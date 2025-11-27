@@ -151,6 +151,7 @@ textarea.input {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    overflow: auto;
 }
 
 .copiar {
